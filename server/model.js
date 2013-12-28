@@ -1,3 +1,5 @@
+//var _ = require('underscore');
+
 var idFromName = function(name) {
   return name && name.toLowerCase().replace(/\W/g, '');
 };
@@ -45,7 +47,7 @@ Restaurant.prototype.update = function(data) {
   }, this);
 
   this.menuItems = this.menuItems.map(function(data) {
-    return new MenuItem(data);
+    return new Dish(data);
   });
 };
 
@@ -73,17 +75,17 @@ Restaurant.fromArray = function(data) {
 };
 
 
-var MenuItem = function(data) {
+var Dish = function(data) {
   this.name = data.name;
   this.price = data.price;
 };
 
-MenuItem.fromArray = function(data) {
-  return new MenuItem({
+Dish.fromArray = function(data) {
+  return new Dish({
     name: data[1],
     price: parseFloat(data[2])
   });
 };
 
 exports.Restaurant = Restaurant;
-exports.MenuItem = MenuItem;
+exports.Dish = Dish;

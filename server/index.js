@@ -3,7 +3,9 @@ var fs = require('fs');
 var open = require('open');
 
 var RestaurantRecord = require('./model').Restaurant;
-var MemoryStorage = require('./storage').Memory;
+var ParseStorage = require('./storage.parse').ParseStorage;
+
+console.log(ParseStorage);
 
 var API_URL = '/api/restaurant';
 var API_URL_ID = API_URL + '/:id';
@@ -24,8 +26,8 @@ var removeMenuItems = function(restaurant) {
 
 exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
   var app = express();
-  var storage = new MemoryStorage();
-
+  var parse = new ParseStorage();
+  parse.initialize();
   // log requests
   app.use(express.logger('dev'));
 
@@ -38,7 +40,9 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
   // API
   app.get(API_URL, function(req, res, next) {
-    res.send(200, storage.getAll().map(removeMenuItems));
+    parse.getAllRestaurants(function(restaurants) {
+      res.send(200, restaurants);
+    });
   });
 
 
@@ -47,7 +51,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
     var errors = [];
 
     if (restaurant.validate(errors)) {
-      storage.add(restaurant);
+      parse.addRestaurant(restaurant);
       return res.send(201, restaurant);
     }
 
@@ -61,7 +65,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
 
   app.get(API_URL_ID, function(req, res, next) {
-    var restaurant = storage.getById(req.params.id);
+    var restaurant = ParseStorage.getById(req.params.id);
 
     if (restaurant) {
       return res.send(200, restaurant);
@@ -72,7 +76,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
 
   app.put(API_URL_ID, function(req, res, next) {
-    var restaurant = storage.getById(req.params.id);
+    var restaurant = parse.getById(req.params.id);
     var errors = [];
 
     if (restaurant) {
@@ -82,7 +86,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
     restaurant = new RestaurantRecord(req.body);
     if (restaurant.validate(errors)) {
-      storage.add(restaurant);
+      parse.add(restaurant);
       return res.send(201, restaurant);
     }
 
@@ -91,7 +95,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
 
   app.del(API_URL_ID, function(req, res, next) {
-    if (storage.deleteById(req.params.id)) {
+    if (parse.deleteById(req.params.id)) {
       return res.send(204, null);
     }
 
@@ -105,16 +109,15 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
   // start the server
   // read the data from json and start the server
-  fs.readFile(DATA_FILE, function(err, data) {
-    JSON.parse(data).forEach(function(restaurant) {
-      storage.add(new RestaurantRecord(restaurant));
-    });
+  //fs.readFile(DATA_FILE, function(err, data) {
+  //  JSON.parse(data).forEach(function(restaurant) {
+  //    parse.addRestaurant(restaurant);
+  //  });
 
     app.listen(PORT, function() {
       open('http://localhost:' + PORT + '/');
-      // console.log('Go to http://localhost:' + PORT + '/');
+      console.log('Go to http://localhost:' + PORT + '/');
     });
-  });
 
 
   // Windows and Node.js before 0.8.9 would crash
@@ -122,10 +125,12 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
   try {
     process.on('SIGINT', function() {
       // save the storage back to the json file
-      fs.writeFile(DATA_FILE, JSON.stringify(storage.getAll()), function() {
+      //fs.writeFile(DATA_FILE, JSON.stringify(parse.getAll()), function() {
         process.exit(0);
-      });
+      //});
     });
-  } catch (e) {}
+  } catch (e) {
+    console.log(JSON.stringify(e));
+  }
 
 };
