@@ -48,9 +48,9 @@ Storage.prototype.getAllRestaurants = function(callback) {
 
 Storage.prototype.initialize = function() {
   var uristring = 
+  // Must be set from .bash_profile or whatever else environment variable settings
   process.env.MONGOLAB_URI || 
   process.env.MONGOHQ_URL ||
-  'mongodb://damian:MileZ1991@ds061938.mongolab.com:61938/heroku_app20766853'    ||
   'mongodb://localhost/musteat';
 
   // Makes connection asynchronously.  Mongoose will queue up database
