@@ -3,9 +3,7 @@ var fs = require('fs');
 var open = require('open');
 
 var RestaurantRecord = require('./model').Restaurant;
-var ParseStorage = require('./storage.parse').ParseStorage;
-
-console.log(ParseStorage);
+var Storage = require('./storage.mongolab').Storage;
 
 var API_URL = '/api/restaurant';
 var API_URL_ID = API_URL + '/:id';
@@ -26,8 +24,8 @@ var removeMenuItems = function(restaurant) {
 
 exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
   var app = express();
-  var parse = new ParseStorage();
-  parse.initialize();
+  var storage = new Storage();
+  storage.initialize();
   // log requests
   app.use(express.logger('dev'));
 
@@ -40,7 +38,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
   // API
   app.get(API_URL, function(req, res, next) {
-    parse.getAllRestaurants(function(restaurants) {
+    storage.getAllRestaurants(function(restaurants) {
       res.send(200, restaurants);
     });
   });
@@ -51,7 +49,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
     var errors = [];
 
     if (restaurant.validate(errors)) {
-      parse.addRestaurant(restaurant);
+      storage.addRestaurant(restaurant);
       return res.send(201, restaurant);
     }
 
@@ -65,7 +63,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
 
   app.get(API_URL_ID, function(req, res, next) {
-    var restaurant = ParseStorage.getById(req.params.id);
+    var restaurant = Storage.getById(req.params.id);
 
     if (restaurant) {
       return res.send(200, restaurant);
@@ -76,7 +74,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
 
   app.put(API_URL_ID, function(req, res, next) {
-    var restaurant = parse.getById(req.params.id);
+    var restaurant = storage.getById(req.params.id);
     var errors = [];
 
     if (restaurant) {
@@ -86,7 +84,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
     restaurant = new RestaurantRecord(req.body);
     if (restaurant.validate(errors)) {
-      parse.add(restaurant);
+      storage.add(restaurant);
       return res.send(201, restaurant);
     }
 
@@ -95,7 +93,7 @@ exports.start = function(PORT, STATIC_DIR, DATA_FILE, TEST_DIR) {
 
 
   app.del(API_URL_ID, function(req, res, next) {
-    if (parse.deleteById(req.params.id)) {
+    if (storage.deleteById(req.params.id)) {
       return res.send(204, null);
     }
 

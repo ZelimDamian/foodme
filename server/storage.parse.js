@@ -1,7 +1,7 @@
 var Parse = require("parse").Parse;
 var Restaurant, query;
 
-var ParseStorage = function() {
+var Storage = function() {
   var storage = [];
 
   this.getAll = function() {
@@ -34,7 +34,7 @@ var ParseStorage = function() {
   };
 };
 
-ParseStorage.prototype.getAllRestaurants = function(callback) {
+Storage.prototype.getAllRestaurants = function(callback) {
   query.find({
     success: function(data) {
       callback(data);
@@ -42,11 +42,11 @@ ParseStorage.prototype.getAllRestaurants = function(callback) {
   });
 }
 
-ParseStorage.prototype.initialize = function() {
+Storage.prototype.initialize = function() {
    Parse.initialize("HIFdCeEJjl8hVhDjsYaa3wFCJe08O9wJEkuxhHpO", "SdGuMuHTD1UqwUKKrNeynIx4zekAaqtZ9dJsbp2u");
    
    Restaurant = Parse.Object.extend("Restaurant");
    query = new Parse.Query(Restaurant)
 }
 
-exports.ParseStorage = ParseStorage;
+exports.Storage = Storage;

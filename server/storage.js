@@ -1,4 +1,4 @@
-var MemoryStorage = function() {
+var Storage = function() {
   var storage = [];
 
   this.getAll = function() {
@@ -31,4 +31,4 @@ var MemoryStorage = function() {
   };
 };
 
-exports.Memory = MemoryStorage;
+exports.Storage = Storage;
